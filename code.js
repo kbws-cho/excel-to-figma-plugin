@@ -38,7 +38,7 @@ figma.ui.onmessage = async (msg) => {
       // row 데이터 → 프레임 내부 레이어 매핑
       for (const [key, value] of Object.entries(row)) {
         if (!value) continue;
-        if (["구좌명", "size", "구분(pc/mo)"].includes(key.toLowerCase())) continue;
+        if (["구좌명", "size", "구분(pc/mo)"].includes(String(key).toLowerCase())) continue;
 
         console.log(`🔑 [PLUGIN] 매핑 시도 → key: ${key}, value: ${value}`);
 
@@ -47,7 +47,7 @@ figma.ui.onmessage = async (msg) => {
           (n) =>
             n.type === "TEXT" &&
             n.name.replace(/^#/, "").toLowerCase().trim() ===
-              key.toLowerCase().trim()
+              String(key).toLowerCase().trim()
         );
 
         console.log(`🔎 [PLUGIN] ${key} → textNodes 개수:`, textNodes.length);
@@ -59,12 +59,21 @@ figma.ui.onmessage = async (msg) => {
 
         for (const targetLayer of textNodes) {
           try {
-            // 텍스트 노드의 모든 폰트 로드
-            const fontNames = targetLayer.getRangeAllFontNames(
-              0,
-              targetLayer.characters.length
-            );
-            for (const font of fontNames) {
+            // 텍스트 노드의 모든 폰트 로드 (빈 텍스트면 fontName 폴백)
+            let fontsToLoad = [];
+            if (targetLayer.characters.length > 0) {
+              fontsToLoad = targetLayer.getRangeAllFontNames(
+                0,
+                targetLayer.characters.length
+              );
+            }
+            if (fontsToLoad.length === 0) {
+              const layerFont = targetLayer.fontName;
+              if (layerFont !== figma.mixed) {
+                fontsToLoad = [layerFont];
+              }
+            }
+            for (const font of fontsToLoad) {
               await figma.loadFontAsync(font);
               console.log(`🔤 [PLUGIN] Font loaded:`, font);
             }
