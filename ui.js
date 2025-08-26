@@ -1,5 +1,3 @@
-import * as XLSX from "xlsx";
-
 console.log("✅ [UI] ui.js 로드됨"); // 시작 로그
 
 let rows = [];
@@ -15,7 +13,7 @@ document.getElementById("file").onchange = async (e) => {
   console.log("📂 [UI] 선택된 파일:", file.name);
 
   const data = await file.arrayBuffer();
-  const workbook = XLSX.read(data);
+  const workbook = XLSX.read(data, { type: "array" });
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
 
