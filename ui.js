@@ -1,12 +1,17 @@
-import * as XLSX from "xlsx";
-
-console.log("✅ [UI] ui.js 로드됨"); // 시작 로그
+console.log("✅ [UI] ui.js 로드됨");
 
 let rows = [];
 
 // 파일 업로드 처리
-document.getElementById("file").onchange = async (e) => {
-  const file = e.target.files[0];
+const uploadInput = document.getElementById("upload");
+const applyButton = document.getElementById("apply");
+
+if (!uploadInput || !applyButton) {
+  console.error("❌ [UI] 필수 요소가 누락되었습니다. HTML을 확인하세요.");
+}
+
+uploadInput?.onchange = async (e) => {
+  const file = e.target.files && e.target.files[0];
   if (!file) {
     console.warn("⚠️ [UI] 파일이 선택되지 않음");
     return;
@@ -24,7 +29,7 @@ document.getElementById("file").onchange = async (e) => {
 };
 
 // 데이터 적용 버튼 클릭
-document.getElementById("apply").onclick = () => {
+applyButton && (applyButton.onclick = () => {
   console.log("✅ [UI] 데이터 적용 버튼 클릭됨. rows 개수:", rows.length);
 
   if (rows.length === 0) {

@@ -38,7 +38,10 @@ figma.ui.onmessage = async (msg) => {
       // row 데이터 → 프레임 내부 레이어 매핑
       for (const [key, value] of Object.entries(row)) {
         if (!value) continue;
-        if (["구좌명", "size", "구분(pc/mo)"].includes(key.toLowerCase())) continue;
+
+        const normalizedKey = String(key).toLowerCase().trim();
+        const skipKeys = ["구좌명", "size", "구분(pc/mo)"].map((k) => k.toLowerCase());
+        if (skipKeys.includes(normalizedKey)) continue;
 
         console.log(`🔑 [PLUGIN] 매핑 시도 → key: ${key}, value: ${value}`);
 
@@ -46,8 +49,7 @@ figma.ui.onmessage = async (msg) => {
         const textNodes = frame.findAll(
           (n) =>
             n.type === "TEXT" &&
-            n.name.replace(/^#/, "").toLowerCase().trim() ===
-              key.toLowerCase().trim()
+            n.name.replace(/^#/, "").toLowerCase().trim() === normalizedKey
         );
 
         console.log(`🔎 [PLUGIN] ${key} → textNodes 개수:`, textNodes.length);
@@ -59,14 +61,24 @@ figma.ui.onmessage = async (msg) => {
 
         for (const targetLayer of textNodes) {
           try {
-            // 텍스트 노드의 모든 폰트 로드
-            const fontNames = targetLayer.getRangeAllFontNames(
-              0,
-              targetLayer.characters.length
-            );
-            for (const font of fontNames) {
-              await figma.loadFontAsync(font);
-              console.log(`🔤 [PLUGIN] Font loaded:`, font);
+            // 폰트 로드: 내용 유무에 따라 분기
+            if (targetLayer.characters.length > 0) {
+              const fontNames = targetLayer.getRangeAllFontNames(
+                0,
+                targetLayer.characters.length
+              );
+              for (const font of fontNames) {
+                await figma.loadFontAsync(font);
+                console.log(`🔤 [PLUGIN] Font loaded:`, font);
+              }
+            } else {
+              if (targetLayer.fontName !== figma.mixed) {
+                await figma.loadFontAsync(targetLayer.fontName);
+                console.log(
+                  `🔤 [PLUGIN] Font loaded (empty text):`,
+                  targetLayer.fontName
+                );
+              }
             }
 
             // 텍스트 값 반영
