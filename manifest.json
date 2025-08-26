@@ -1,0 +1,8 @@
+{
+  "name": "Excel to Figma MVP",
+  "id": "excel-to-figma-mvp",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma","dev"]   
+}
